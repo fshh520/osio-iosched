@@ -1,5 +1,6 @@
 /*
  * elevator osio
+ * Copyright (C) Octagram Sun <octagram@qq.com>
  */
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
@@ -8,7 +9,8 @@
 #include <linux/slab.h>
 #include <linux/init.h>
 
-#define FIFO_BATCH		8
+#define FIFO_READ_BATCH		16
+#define FIFO_WRITE_BATCH	8
 #define WRITES_STARVED		2
 
 enum osio_direction {
@@ -23,7 +25,7 @@ struct osio_data {
 	enum osio_direction fifo_dir;
 	int starved;
 
-	int fifo_batch;
+	int fifo_batch[2];
 	int writes_starved;
 };
 
@@ -40,7 +42,9 @@ static int osio_dispatch(struct request_queue *q, int force)
 					   !list_empty(&od->fifo_head[OSIO_WRITE]),};
 	struct request *rq = NULL;
 
-	if (od->batching > od->fifo_batch) {
+	if (od->fifo_dir == OSIO_UNDEF) {
+		;
+	} else if (od->batching > od->fifo_batch[od->fifo_dir]) {
 		od->fifo_dir = OSIO_UNDEF;
 	} else if (!non_empty[od->fifo_dir]) {
 		od->fifo_dir = OSIO_UNDEF;
@@ -120,8 +124,9 @@ static int osio_init_queue(struct request_queue *q, struct elevator_type *e)
 	INIT_LIST_HEAD(&od->fifo_head[OSIO_READ]);
 	INIT_LIST_HEAD(&od->fifo_head[OSIO_WRITE]);
 	od->batching = 0;
-	od->fifo_batch = FIFO_BATCH;
-	od->fifo_dir = OSIO_READ;
+	od->fifo_batch[OSIO_READ] = FIFO_READ_BATCH;
+	od->fifo_batch[OSIO_WRITE] = FIFO_WRITE_BATCH;
+	od->fifo_dir = OSIO_UNDEF;
 	od->starved = 0;
 	od->writes_starved = WRITES_STARVED;
 
@@ -167,7 +172,8 @@ static ssize_t __FUNC(struct elevator_queue *e, char *page)		\
 }
 
 OSIO_SHOW_FUNCTION(osio_writes_starved_show, writes_starved, 0);
-OSIO_SHOW_FUNCTION(osio_fifo_batch_show, fifo_batch, 0);
+OSIO_SHOW_FUNCTION(osio_fifo_read_batch_show, fifo_batch[OSIO_READ], 0);
+OSIO_SHOW_FUNCTION(osio_fifo_write_batch_show, fifo_batch[OSIO_WRITE], 0);
 
 #define OSIO_STORE_FUNCTION(__FUNC, __VAR, MIN, MAX, __CONV)			\
 static ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count)	\
@@ -187,7 +193,8 @@ static ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count)	
 }
 
 OSIO_STORE_FUNCTION(osio_writes_starved_store, writes_starved, INT_MIN, INT_MAX, 0);
-OSIO_STORE_FUNCTION(osio_fifo_batch_store, fifo_batch, 0, INT_MAX, 0);
+OSIO_STORE_FUNCTION(osio_fifo_read_batch_store, fifo_batch[OSIO_READ], 0, INT_MAX, 0);
+OSIO_STORE_FUNCTION(osio_fifo_write_batch_store, fifo_batch[OSIO_WRITE], 0, INT_MAX, 0);
 
 #define OSIO_ATTR(name) \
 	__ATTR(name, S_IRUGO|S_IWUSR, osio_##name##_show, \
@@ -195,7 +202,8 @@ OSIO_STORE_FUNCTION(osio_fifo_batch_store, fifo_batch, 0, INT_MAX, 0);
 
 static struct elv_fs_entry osio_attrs[] = {
 	OSIO_ATTR(writes_starved),
-	OSIO_ATTR(fifo_batch),
+	OSIO_ATTR(fifo_read_batch),
+	OSIO_ATTR(fifo_write_batch),
 	__ATTR_NULL,
 };
 
