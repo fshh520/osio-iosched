@@ -1,13 +1,13 @@
 #
-#  osio i/o scheduler.
+#  elevator osio
 #
 #  Copyright (C) Octagram Sun <octagram@qq.com>
+#  License GPL
 #
 
 KERNELDIR ?= /lib/modules/`uname -r`/build
 KERNEL_VERSION ?= `uname -r`
 CROSS_COMPILER ?=
-INSTALLDIR ?= out
 
 PWD := $(shell pwd)
 CC ?= $(CROSS_COMPILER)gcc

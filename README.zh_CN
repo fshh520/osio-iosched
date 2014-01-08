@@ -1,0 +1,65 @@
+osio
+=========
+
+--------
+概述
+--------
+osio是一个简单的io调度算法，基于内核中的noop和deadline改写而成。
+osio像noop一样，不会对io请求按扇区进行排序。因此osio适用于以flash为基础的存储器(ssd、sd卡、u盘)，不适用于机械硬盘。
+但是和noop不同的是，osio会像deadline一样，将io请求按方向分类，并考虑调度的公平性。
+osio将io请求分为3个方向：读、同步写、异步写。
+和deadline一样，osio优先满足读请求，只有当同步写或异步写的饥饿程度超过了它们的饥饿线，才会考虑写请求。
+为什么读请求没有同步和异步之分呢？
+内核将所有读请求都视为同步的，可以从下面的代码中得到应证：
+*| include/linux/blkdev.h
+*| static inline bool rw_is_sync(unsigned int rw_flags)
+*| {
+*|	return !(rw_flags & REQ_WRITE) || (rw_flags & REQ_SYNC);
+*| }
+*|
+*| static inline bool rq_is_sync(struct request *rq)
+*| {
+*| 	return rw_is_sync(rq->cmd_flags);
+*| }
+事实上，大部分写请求都是异步的。（例如复制文件时的大量写请求是异步的，mount/umount文件系统时发生的一次写请求是同步的^_^）
+
+---------
+编译与安装
+---------
+make
+make install
+
+需要root权限。
+这份代码目前只在kernel-3.12.6中测试过，并不能保证在其他内核中能顺利编译与运行。
+内核中的API是不断变化的，对于比较老的内核可能需要根据其API进行修改。将来会增加这部分代码。
+
+---------
+如何使用
+---------
+先获得root权限
+su
+
+插入osio的内核模块
+modprobe osio
+
+查看osio是否已经可用（注：sdX有可能是sda、sdb...）
+cat /sys/block/sdX/queue/scheduler
+如果可用，将在输出结果出现osio，就像这样
+noop [deadline] cfq osio 
+
+修改调度算法
+echo osio > /sys/block/sdX/queue/scheduler
+cat /sys/block/sdX/queue/scheduler
+可以得到下面的信息
+noop deadline cfq [osio]
+
+可供调整的参数
+/sys/block/sdX/queue/iosched/里面
+async_write_starved_line: 异步写请求的饥饿线，默认值:5 最小值:0 最大值:65535
+sync_write_starved_line: 同步写请求的饥饿线，默认值:2 最小值:0 最大值:65535
+fifo_read_batch: 一批读请求的最大数量，默认值:8 最小值:1 最大值:65535
+fifo_async_write_batch: 一批异步写请求的最大数量，默认值:4 最小值:1 最大值:65535
+fifo_sync_write_batch: 一批同步写请求的最大数量，默认值:2 最小值:1 最大值:65535
+
+
+
