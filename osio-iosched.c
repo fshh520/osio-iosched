@@ -24,12 +24,14 @@
 /******** data structure ********/
 #define FIFO_READ_BATCH				8
 #define FIFO_SYNC_WRITE_BATCH			4
-#define FIFO_ASYNC_WRITE_BATCH			2
-#define SYNC_WRITE_STARVED_LINE			2
+#define FIFO_ASYNC_WRITE_BATCH			4
+#define SYNC_WRITE_STARVED_LINE			1
 #define ASYNC_WRITE_STARVED_LINE		5
 
-#define WRITE_STARVED_LINE_MAX			65535
-#define WRITE_STARVED_LINE_MIN			0
+#define SYNC_WRITE_STARVED_LINE_MAX		65535
+#define SYNC_WRITE_STARVED_LINE_MIN		0
+#define ASYNC_WRITE_STARVED_LINE_MAX		65535
+#define ASYNC_WRITE_STARVED_LINE_MIN		1
 #define FIFO_BATCH_MAX				65535
 #define FIFO_BATCH_MIN				1
 
@@ -264,9 +266,9 @@ static ssize_t __FUNC(struct elevator_queue *e, const char *page, size_t count)	
 }
 
 OSIO_STORE_FUNCTION(osio_sync_write_starved_line_store, write_starved_line[OSIO_SYNC], \
-			WRITE_STARVED_LINE_MIN, WRITE_STARVED_LINE_MAX, 0);
+			SYNC_WRITE_STARVED_LINE_MIN, SYNC_WRITE_STARVED_LINE_MAX, 0);
 OSIO_STORE_FUNCTION(osio_async_write_starved_line_store, write_starved_line[OSIO_ASYNC], \
-			WRITE_STARVED_LINE_MIN, WRITE_STARVED_LINE_MAX, 0);
+			ASYNC_WRITE_STARVED_LINE_MIN, ASYNC_WRITE_STARVED_LINE_MAX, 0);
 OSIO_STORE_FUNCTION(osio_fifo_read_batch_store, fifo_batch[OSIO_DIR_READ], \
 			FIFO_BATCH_MIN, FIFO_BATCH_MAX, 0);
 OSIO_STORE_FUNCTION(osio_fifo_sync_write_batch_store, fifo_batch[OSIO_DIR_SYNC_WRITE], \

@@ -8,7 +8,7 @@ osio是一个简单的io调度算法，基于内核中的noop和deadline改写�
 osio像noop一样，不会对io请求按扇区进行排序。因此osio适用于以flash为基础的存储器(ssd、sd卡、u盘)，不适用于机械硬盘。
 但是和noop不同的是，osio会像deadline一样，将io请求按方向分类，并考虑调度的公平性。
 osio将io请求分为3个方向：读、同步写、异步写。
-和deadline一样，osio优先满足读请求，只有当同步写或异步写的饥饿程度超过了它们的饥饿线，才会考虑写请求。
+和deadline一样，osio优先满足读请求，只有当同步写或异步写的饥饿程度超过了（注：大于）它们的饥饿线，才会考虑写请求。
 为什么读请求没有同步和异步之分呢？
 内核将所有读请求都视为同步的，可以从下面的代码中得到应证：
 *| include/linux/blkdev.h
@@ -55,11 +55,15 @@ noop deadline cfq [osio]
 
 可供调整的参数
 /sys/block/sdX/queue/iosched/里面
-async_write_starved_line: 异步写请求的饥饿线，默认值:5 最小值:0 最大值:65535
-sync_write_starved_line: 同步写请求的饥饿线，默认值:2 最小值:0 最大值:65535
+async_write_starved_line: 异步写请求的饥饿线，默认值:5 最小值:1 最大值:65535
+sync_write_starved_line: 同步写请求的饥饿线，默认值:1 最小值:0 最大值:65535
 fifo_read_batch: 一批读请求的最大数量，默认值:8 最小值:1 最大值:65535
 fifo_async_write_batch: 一批异步写请求的最大数量，默认值:4 最小值:1 最大值:65535
-fifo_sync_write_batch: 一批同步写请求的最大数量，默认值:2 最小值:1 最大值:65535
+fifo_sync_write_batch: 一批同步写请求的最大数量，默认值:4 最小值:1 最大值:65535
 
-
+当sync_write_starved_line == async_write_starved_line == 0时，
+如果同时存在大量的读，同步写和异步写请求，读请求将一直得不到响应，
+因为当进行完一批同步写时，异步写已经处于饥饿状态，而进行完一批异步写时，同步写又处于
+饥饿状态，也就是写将一直饥饿。所以读将被饿死。
+因此，这里将async_write_starved_line的最小值限定为1。
 
