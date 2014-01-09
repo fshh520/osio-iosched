@@ -2,6 +2,7 @@
  * elevator osio
  * Copyright (C) Octagram Sun <octagram@qq.com>
  */
+#include <linux/version.h>
 #include <linux/blkdev.h>
 #include <linux/elevator.h>
 #include <linux/bio.h>
@@ -173,6 +174,7 @@ static struct request * osio_latter_request(struct request_queue *q, struct requ
 	return list_entry(rq->queuelist.next, struct request, queuelist);
 }
 
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)
 static int osio_init_queue(struct request_queue *q, struct elevator_type *e)
 {
 	struct osio_data *od;
@@ -207,6 +209,34 @@ static int osio_init_queue(struct request_queue *q, struct elevator_type *e)
 	spin_unlock_irq(q->queue_lock);
 	return 0;
 }
+#else
+static int osio_init_queue(struct request_queue *q)
+{
+	struct osio_data *od;
+
+	od = kmalloc_node(sizeof(*od), GFP_KERNEL, q->node);
+	if (!od) {
+		return -ENOMEM;
+	}
+
+	INIT_LIST_HEAD(&od->fifo_head[OSIO_DIR_READ]);
+	INIT_LIST_HEAD(&od->fifo_head[OSIO_DIR_SYNC_WRITE]);
+	INIT_LIST_HEAD(&od->fifo_head[OSIO_DIR_ASYNC_WRITE]);
+	od->batching = 0;
+	od->fifo_dir = OSIO_DIR_UNDEF;
+	od->write_starved[OSIO_SYNC] = 0;
+	od->write_starved[OSIO_ASYNC] = 0;
+	od->fifo_batch[OSIO_DIR_READ] = FIFO_READ_BATCH;
+	od->fifo_batch[OSIO_DIR_SYNC_WRITE] = FIFO_SYNC_WRITE_BATCH;
+	od->fifo_batch[OSIO_DIR_ASYNC_WRITE] = FIFO_ASYNC_WRITE_BATCH;
+	od->write_starved_line[OSIO_SYNC] = SYNC_WRITE_STARVED_LINE;
+	od->write_starved_line[OSIO_ASYNC] = ASYNC_WRITE_STARVED_LINE;
+
+	q->elevator->elevator_data = od;
+
+	return 0;
+}
+#endif
 
 static void osio_exit_queue(struct elevator_queue *e)
 {
