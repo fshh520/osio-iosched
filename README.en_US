@@ -1,0 +1,99 @@
+osio
+=========
+At the begining, I am sorry to my poor English. But I need to voice with my Chinglish. ^_^!
+
+---------
+Overview
+---------
+Osio is a simple I/O scheduler, which is based on noop and deadline.
+Osio doesn't reorder multiple I/O requests depended on the sectors, like noop. As a result,
+osio is suitable for flash devices (ssd, sdcard, udisk), and not friendly to hard disks.
+As distinct from noop, osio classifies I/O requests by directions (read, sync write and
+async write), and dispatches multiple I/O requests, like deadline (But deadline only
+have two directions: read and write).
+Same as deadline, osio gives a preference to reads. However, osio doesn't want to starve
+writes indefinitely either. So sync_write_starved_line and async_write_starved_line
+control how many times osio starves the sync and async writes. When that has been done
+(a)sync_writes_starved_line number of times, osio dispatches some (a)sync writes based on
+the same criteria as reads.
+
+Why are there no sync and async reads?
+Because kernel treat all read requests as sync. see the code for detail:
+*| include/linux/blkdev.h
+*| static inline bool rw_is_sync(unsigned int rw_flags)
+*| {
+*|	return !(rw_flags & REQ_WRITE) || (rw_flags & REQ_SYNC);
+*| }
+*|
+*| static inline bool rq_is_sync(struct request *rq)
+*| {
+*| 	return rw_is_sync(rq->cmd_flags);
+*| }
+
+Most of writes are async in fact. (For example. When we copy files, the write requests
+are async. And when we mount/umount filesystem, the only one request is sync write.)
+
+-------------------
+compile and install
+-------------------
+$ make
+# make install
+
+Need root authority!
+The source code doesn't support many versions of kernel. When using same versions
+of kernel, you may meet compiling error because of the change of kernel APIs. And I will
+add support to some versions of kernel in the future.
+
+Now status:
+kernel-3.12.x -------- OK
+kernel-3.8.x -------- OK
+
+next step:
+kernel-3.5.x
+kernel-3.2.x
+
+-----------
+How to use
+-----------
+Firstly, get the root authority.
+$ su
+
+Secondly, insert the osio kernel module.
+# modprobe osio
+
+Tirdly, examine the schedulers in system. (sdX is sda, sdb, ..., based on your situation)
+# cat /sys/block/sdX/queue/scheduler
+Maybe the result is like this:
+noop [deadline] cfq osio
+
+Fourthly, change the scheduler to osio
+# echo osio > /sys/block/sdX/queue/scheduler
+# cat /sys/block/sdX/queue/scheduler
+the result is:
+noop deadline cfq [osio]
+
+---------------
+The parameters
+---------------
+All parameters are in /sys/block/sdX/queue/iosched/
+async_write_starved_line: The starved line of async write. (default:5 min:1 max:65535)
+sync_write_starved_line: The starved line of sync write. (default:1 min:0 max:65535)
+fifo_read_batch: The max number of a batch of reads. When finished dispatching a batch 
+		 of reads, write_starved[SYNC] ++ and write_starved[ASYNC] ++.
+		 (default:8 min:1 max:65535)
+fifo_async_write_batch: The max number of a batch of async writes. When finished
+			dispatching a batch of async writes, write_starved[SYNC] ++.
+			(default:4 min:1 max:65535)
+fifo_sync_write_batch: The max number of a batch of sync writes. When finished
+		       dispatching a batch of sync writes, write_starved[ASYNC] ++.
+		       (default:4 min:1 max:65535)
+
+When sync_write_starved_line == async_write_starved_line == 0, if there are many reads,
+sync writes and async writes at the same time, the reads will be starved.
+When osio dispatches a batch of sync writes, the number of write_starved[ASYNC] is 1, which
+is larger than the async_write_starved_line (0). So osio needs to dispatch a batch of async
+writes next. And when osio dispatches a batch of async writes, the number of
+write_starved[SYNC] is 1, which is larger than the sync_write_starved_line (0). So osio needs
+to dispatch a batch of sync writes next. It is a bad loop. Reads will be starved!
+So, osio sets the min value of async_write_starved_line to 1 to avoid this bug.
+
