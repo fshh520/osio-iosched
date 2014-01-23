@@ -45,6 +45,7 @@ of kernel, you may meet compiling error because of the change of kernel APIs. An
 add support to some versions of kernel in the future.
 
 Now status:
+kernel-3.13.x -------- OK
 kernel-3.12.x -------- OK
 kernel-3.8.x -------- OK
 
