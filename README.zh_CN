@@ -35,19 +35,19 @@ osio将io请求分为3个方向：读、同步写、异步写。
 ---------
 $ make
 # make install
-
 需要root权限。
+
 这份代码是在kernel-3.12.5的基础上编写而成的，并不能保证在其他版本的内核中能顺利编译与运行。
 内核中的API是不断变化的，其他版本的内核可能需要根据其API进行修改。将来会增加这部分代码。
 目前支持的kernel：
+kernel-3.15.x
 kernel-3.14.x
 kernel-3.13.x
 kernel-3.12.x
 kernel-3.8.x
 
 下一步：
-kernel-3.5.0
-kernel-3.2.0
+kernel-3.16.x
 
 ---------
 如何使用
