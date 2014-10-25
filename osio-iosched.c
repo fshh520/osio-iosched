@@ -1,6 +1,9 @@
-/*
+/**
  * elevator osio
- * Copyright (C) Octagram Sun <octagram@qq.com>
+ *
+ * Date: Dec. 20, 2013
+ * Copyright (C) 2014 Octagram Sun <octagram@qq.com>
+ * License: GPL v2
  */
 #include <linux/version.h>
 #include <linux/blkdev.h>
@@ -10,17 +13,22 @@
 #include <linux/slab.h>
 #include <linux/init.h>
 
+#if __BITS_PER_LONG == 64 /* #1 */
+#pragma message("__BITS_PER_LONG: 64")
+#else /* #1 */
+#pragma message("__BITS_PER_LONG: 32")
+#endif /* #1 */
+
 /******** log ********/
-#define OSIO_DEBUG				0
-#define osio_crt(x...)				printk(KERN_CRIT "[OSIO CRT] " x)
-#define osio_inf(x...)				printk(KERN_INFO "[OSIO INF] " x)
-#define osio_err(x...)				printk(KERN_ERR "[OSIO ERR] " x)
-#define osio_wrn(x...)				printk(KERN_WARNING "[OSIO WRN] " x)
-#if OSIO_DEBUG
-   #define osio_dbg(x...)			printk(KERN_DEBUG "[OSIO DBG] " x)
-#else
-   #define osio_dbg(x...)
-#endif
+#define osio_crt(fmt, x...)		printk(KERN_CRIT "[OSIO CRT] <%s> " fmt, __func__, ##x)
+#define osio_inf(fmt, x...)		printk(KERN_INFO "[OSIO INF] <%s> " fmt, __func__, ##x)
+#define osio_err(fmt, x...)		printk(KERN_ERR "[OSIO ERR] <%s> " fmt, __func__, ##x)
+#define osio_wrn(fmt, x...)		printk(KERN_WARNING "[OSIO WRN] <%s> " fmt, __func__, ##x)
+#ifdef CONFIG_OSIO_DEBUG /* #2 */
+   #define osio_dbg(fmt, x...)		printk(KERN_DEBUG "[OSIO DBG] <%s> " fmt, __func__, ##x)
+#else /* #2 */
+   #define osio_dbg(fmt, x...)
+#endif /* #2 */
 
 /******** data structure ********/
 #define FIFO_READ_BATCH				8
@@ -70,7 +78,7 @@ static void osio_add_request(struct request_queue *q, struct request *rq)
 	struct osio_data *od = q->elevator->elevator_data;
 	const unsigned int data_dir = rq_data_dir(rq) + !rq_is_sync(rq);
 
-	osio_dbg("osio_add_request(), data_dir = %d, rq_is_sync(rq) = %d\n", data_dir, rq_is_sync(rq));
+	osio_dbg("data_dir = %d, rq_is_sync(rq) = %d\n", data_dir, rq_is_sync(rq));
 	list_add_tail(&rq->queuelist, &od->fifo_head[data_dir]);
 }
 
@@ -82,10 +90,10 @@ static int osio_dispatch(struct request_queue *q, int force)
 					   !list_empty(&od->fifo_head[OSIO_DIR_ASYNC_WRITE]),};
 	struct request *rq = NULL;
 
-	osio_dbg("osio_dispatch() 1, od->fifo_dir = %d\n", od->fifo_dir);
-	osio_dbg("osio_dispatch() 1, non_empty[0] = %d\n", non_empty[0]);
-	osio_dbg("osio_dispatch() 1, non_empty[1] = %d\n", non_empty[1]);
-	osio_dbg("osio_dispatch() 1, non_empty[2] = %d\n", non_empty[2]);
+	osio_dbg("1, od->fifo_dir = %d\n", od->fifo_dir);
+	osio_dbg("1, non_empty[0] = %d\n", non_empty[0]);
+	osio_dbg("1, non_empty[1] = %d\n", non_empty[1]);
+	osio_dbg("1, non_empty[2] = %d\n", non_empty[2]);
 
 	/* dispatch a batch of rq */
 	if (od->fifo_dir != OSIO_DIR_UNDEF) {
@@ -145,8 +153,8 @@ dir_async_write:
 
 dispatch_request:
 	/* dispatch req */
-	osio_dbg("osio_dispatch() 2, od->fifo_dir = %d\n", od->fifo_dir);
-	osio_dbg("osio_dispatch() 2, od->batching = %d\n", od->batching);
+	osio_dbg("2, od->fifo_dir = %d\n", od->fifo_dir);
+	osio_dbg("2, od->batching = %d\n", od->batching);
 	rq = rq_entry_fifo(od->fifo_head[od->fifo_dir].next);
 	list_del_init(&rq->queuelist);
 	elv_dispatch_add_tail(q, rq);
@@ -174,7 +182,7 @@ static struct request * osio_latter_request(struct request_queue *q, struct requ
 	return list_entry(rq->queuelist.next, struct request, queuelist);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0) /* #3 */
 static int osio_init_queue(struct request_queue *q, struct elevator_type *e)
 {
 	struct osio_data *od;
@@ -209,7 +217,7 @@ static int osio_init_queue(struct request_queue *q, struct elevator_type *e)
 	spin_unlock_irq(q->queue_lock);
 	return 0;
 }
-#else
+#else /* #3 */
 static int osio_init_queue(struct request_queue *q)
 {
 	struct osio_data *od;
@@ -236,7 +244,7 @@ static int osio_init_queue(struct request_queue *q)
 
 	return 0;
 }
-#endif
+#endif /* #3 */
 
 static void osio_exit_queue(struct elevator_queue *e)
 {
@@ -349,5 +357,5 @@ module_init(osio_init);
 module_exit(osio_exit);
 
 MODULE_AUTHOR("Octagram Sun <octagram@qq.com>");
-MODULE_LICENSE("GPL");
+MODULE_LICENSE("GPL v2");
 MODULE_DESCRIPTION("osio scheduler");

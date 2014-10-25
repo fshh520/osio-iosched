@@ -1,4 +1,6 @@
 osio
+
+License: GPL v2
 =========
 At the begining, I am sorry to my poor English. But I need to voice with my Chinglish. ^_^!
 
@@ -50,6 +52,7 @@ of kernel, you may meet compiling error because of the change of kernel APIs. An
 add support to some versions of kernel in the future.
 
 Now status:
+kernel-3.16.x -------- OK
 kernel-3.15.x -------- OK
 kernel-3.14.x -------- OK
 kernel-3.13.x -------- OK
