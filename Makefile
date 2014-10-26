@@ -12,7 +12,7 @@ CROSS_COMPILE ?=
 
 ########################## +++ config +++ ############################
 CONFIG_OSIO := m
-CONFIG_OSIO_DEBUG := y
+CONFIG_OSIO_DEBUG := n
 ########################## --- config --- ############################
 
 ifeq ($(CONFIG_OSIO_DEBUG), y)
