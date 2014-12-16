@@ -1,13 +1,7 @@
-osio
-
-License: GPL v2
+# osio
+# (C) Copyright 2013 - 2014 Octagram Sun <octagram@qq.com>
+# License: GPL v2
 =========
-At the begining, I am sorry to my poor English. But I need to voice with my Chinglish. ^_^!
-
----------
-download
----------
-git clone https://github.com/octagram-xuanwu/osio-iosched.git
 
 ---------
 Overview
@@ -44,23 +38,20 @@ are async. And when we mount/umount filesystem, the only one request is sync wri
 compile and install
 -------------------
 $ make
-# make install
-Need root authority!
+$ sudo make install
 
 The source code doesn't support many versions of kernel. When using same versions
 of kernel, you may meet compiling error because of the change of kernel APIs. And I will
 add support to some versions of kernel in the future.
 
 Now status:
+kernel-3.17.x -------- OK
 kernel-3.16.x -------- OK
 kernel-3.15.x -------- OK
 kernel-3.14.x -------- OK
 kernel-3.13.x -------- OK
 kernel-3.12.x -------- OK
 kernel-3.8.x  -------- OK
-
-next step:
-kernel-3.16.x
 
 -----------
 How to use
