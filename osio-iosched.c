@@ -1,9 +1,15 @@
-/**
- * elevator osio
+/** @file
+ * C source for the osio io-scheduler kernel modules
  *
- * Date: Dec. 20, 2013
- * Copyright (C) 2014 Octagram Sun <octagram@qq.com>
- * License: GPL v2
+ * Copyright (C) 2015 Octagram Sun <octagram@qq.com>
+ *
+ * This file is part of osio io-scheduler, as available from 
+ * https://gitcafe.com/octagram/osio. This file is free software;
+ * you can redistribute it and/or modify it under the terms of the GNU
+ * General Public License (GPL) as published by the Free Software
+ * Foundation, in version 2 as it comes in the "LICENSE" file of the
+ * osio distribution. osio is distributed in the hope that 
+ * it will be useful, but WITHOUT ANY WARRANTY of any kind.
  */
 #include <linux/version.h>
 #include <linux/blkdev.h>
@@ -13,10 +19,10 @@
 #include <linux/slab.h>
 #include <linux/init.h>
 
-#if __BITS_PER_LONG == 64 /* #1 */
-#pragma message("__BITS_PER_LONG: 64")
+#if CONFIG_64BIT == 1 /* #1 */
+#pragma message("building in 64bit")
 #else /* #1 */
-#pragma message("__BITS_PER_LONG: 32")
+#pragma message("building in 32bit")
 #endif /* #1 */
 
 /******** log ********/

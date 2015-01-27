@@ -1,12 +1,21 @@
-# osio
-# (C) Copyright 2013 - 2014 Octagram Sun <octagram@qq.com>
-# License: GPL v2
+## @file
+# README.zh_CN for the osio io-scheduler kernel modules
+#
+# (C) Copyright 2015 Octagram Sun <octagram@qq.com>
+#
+# This file is part of osio io-scheduler, as available from 
+# https://gitcafe.com/octagram/osio. This file is free software;
+# you can redistribute it and/or modify it under the terms of the GNU
+# General Public License (GPL) as published by the Free Software
+# Foundation, in version 2 as it comes in the "LICENSE" file of the
+# osio distribution. osio is distributed in the hope that 
+# it will be useful, but WITHOUT ANY WARRANTY of any kind.
 =========
 
 --------
 概述
 --------
-osio是一个简单的io调度算法，基于内核中的noop和deadline改写而成。
+osio是一个简单的io调度算法，适用于SSD。
 osio像noop一样，不会对io请求按扇区进行排序。因此osio适用于以flash为基础的存储器(ssd、sd卡、u盘)，不适用于机械硬盘。
 但是和noop不同的是，osio会像deadline一样，将io请求按方向分类，并考虑调度的公平性。
 osio将io请求分为3个方向：读、同步写、异步写。

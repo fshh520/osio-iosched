@@ -1,0 +1,17 @@
+Package: osio-ioscheduler
+Source: osio
+Version: ##VERSION##
+Architecture: all
+Maintainer: Octagram Sun <octagram@qq.com>
+Depends: dkms (>= 2.1.0.0)
+Section: kernel
+Priority: extra
+Homepage: https://gitcafe.com/octagram/osio
+Description: Osio is a simple I/O scheduler, which is friendly to SSD.
+ Osio doesn't reorder multiple I/O requests depended on the sectors like noop. As a result,
+ osio is suitable for flash devices (SSD, SDCard, UDisk), and not friendly to hard disks.
+ As distinct from noop, osio classifies I/O requests by directions (read, sync write and
+ async write), and dispatches multiple I/O requests, like deadline (But deadline only
+ have two directions: read and write).
+ Same as deadline, osio gives a preference to reads. However, osio doesn't want to starve
+ writes indefinitely either.

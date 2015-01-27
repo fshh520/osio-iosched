@@ -1,14 +1,23 @@
-# osio
-# (C) Copyright 2013 - 2014 Octagram Sun <octagram@qq.com>
-# License: GPL v2
+## @file
+# README.en_US for the osio io-scheduler kernel modules
+#
+# (C) Copyright 2015 Octagram Sun <octagram@qq.com>
+#
+# This file is part of osio io-scheduler, as available from 
+# https://gitcafe.com/octagram/osio. This file is free software;
+# you can redistribute it and/or modify it under the terms of the GNU
+# General Public License (GPL) as published by the Free Software
+# Foundation, in version 2 as it comes in the "LICENSE" file of the
+# osio distribution. osio is distributed in the hope that 
+# it will be useful, but WITHOUT ANY WARRANTY of any kind.
 =========
 
 ---------
 Overview
 ---------
-Osio is a simple I/O scheduler, which is based on noop and deadline.
-Osio doesn't reorder multiple I/O requests depended on the sectors, like noop. As a result,
-osio is suitable for flash devices (ssd, sdcard, udisk), and not friendly to hard disks.
+Osio is a simple I/O scheduler, which is friendly to SSD.
+Osio doesn't reorder multiple I/O requests depended on the sectors like noop. As a result,
+osio is suitable for flash devices (SSD, SDCard, UDisk), and not friendly to hard disks.
 As distinct from noop, osio classifies I/O requests by directions (read, sync write and
 async write), and dispatches multiple I/O requests, like deadline (But deadline only
 have two directions: read and write).
