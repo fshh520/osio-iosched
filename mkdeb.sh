@@ -1,14 +1,15 @@
-#!/bin/sh
+#!/bin/bash
 # shell script for the osio io-scheduler kernel modules
 #
 # Copyright (C) 2015 Octagram Sun <octagram@qq.com>
 #
 # This file is part of osio io-scheduler, as available from 
-# https://gitcafe.com/octagram/osio. This file is free software;
+# https://gitcafe.com/octagram/osio
+# https://github.com/octagram-xuanwu/osio-iosched
+# This file is free software;
 # you can redistribute it and/or modify it under the terms of the GNU
 # General Public License (GPL) as published by the Free Software
-# Foundation, in version 2 as it comes in the "LICENSE" file of the
-# osio distribution. osio is distributed in the hope that 
+# Foundation, in version 2. Osio is distributed in the hope that 
 # it will be useful, but WITHOUT ANY WARRANTY of any kind.
 #
 
@@ -43,7 +44,6 @@ function mkdeb()
 	cp dkms.conf ${PKGNAME}/usr/src/${NAME}-${VERSION}
 
 	mkdir -p ${PKGNAME}/usr/share/doc/${NAME}
-	cp LICENSE ${PKGNAME}/usr/share/doc/${NAME}
 	cp README.zh_CN ${PKGNAME}/usr/share/doc/${NAME}
 	cp README.en_US ${PKGNAME}/usr/share/doc/${NAME}
 	cp README.md ${PKGNAME}/usr/share/doc/${NAME}

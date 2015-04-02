@@ -1,15 +1,4 @@
-## @file
-# README.en_US for the osio io-scheduler kernel modules
-#
-# (C) Copyright 2015 Octagram Sun <octagram@qq.com>
-#
-# This file is part of osio io-scheduler, as available from 
-# https://gitcafe.com/octagram/osio. This file is free software;
-# you can redistribute it and/or modify it under the terms of the GNU
-# General Public License (GPL) as published by the Free Software
-# Foundation, in version 2 as it comes in the "LICENSE" file of the
-# osio distribution. osio is distributed in the hope that 
-# it will be useful, but WITHOUT ANY WARRANTY of any kind.
+osio
 =========
 
 ---------
@@ -49,18 +38,15 @@ compile and install
 $ make
 $ sudo make install
 
+or
+
+$ make deb
+You will get a package named osio-ioscheduler_0.8-1_all.deb
+$ sudo dpkg -i osio-ioscheduler_0.8-1_all.deb
+
 The source code doesn't support many versions of kernel. When using same versions
 of kernel, you may meet compiling error because of the change of kernel APIs. And I will
 add support to some versions of kernel in the future.
-
-Now status:
-kernel-3.17.x -------- OK
-kernel-3.16.x -------- OK
-kernel-3.15.x -------- OK
-kernel-3.14.x -------- OK
-kernel-3.13.x -------- OK
-kernel-3.12.x -------- OK
-kernel-3.8.x  -------- OK
 
 -----------
 How to use

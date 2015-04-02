@@ -4,12 +4,12 @@
  * Copyright (C) 2015 Octagram Sun <octagram@qq.com>
  *
  * This file is part of osio io-scheduler, as available from 
- * https://gitcafe.com/octagram/osio. This file is free software;
- * you can redistribute it and/or modify it under the terms of the GNU
- * General Public License (GPL) as published by the Free Software
- * Foundation, in version 2 as it comes in the "LICENSE" file of the
- * osio distribution. osio is distributed in the hope that 
- * it will be useful, but WITHOUT ANY WARRANTY of any kind.
+ * https://gitcafe.com/octagram/osio
+ * https://github.com/octagram-xuanwu/osio-iosched
+ * This file is free software. You can redistribute it and/or modify it
+ * under the terms of the GNU General Public License (GPL) as published
+ * by the Free Software Foundation, in version 2. Osio is distributed in
+ * the hope that it will be useful, but WITHOUT ANY WARRANTY of any kind.
  */
 #include <linux/version.h>
 #include <linux/blkdev.h>
@@ -19,22 +19,26 @@
 #include <linux/slab.h>
 #include <linux/init.h>
 
-#if CONFIG_64BIT == 1 /* #1 */
+#if CONFIG_64BIT == 1
 #pragma message("building in 64bit")
-#else /* #1 */
+#else
 #pragma message("building in 32bit")
-#endif /* #1 */
+#endif
+
+#ifdef CONFIG_OSIO_DEBUG
+#pragma message("building with debugging log")
+#endif
 
 /******** log ********/
 #define osio_crt(fmt, x...)		printk(KERN_CRIT "[OSIO CRT] <%s> " fmt, __func__, ##x)
 #define osio_inf(fmt, x...)		printk(KERN_INFO "[OSIO INF] <%s> " fmt, __func__, ##x)
 #define osio_err(fmt, x...)		printk(KERN_ERR "[OSIO ERR] <%s> " fmt, __func__, ##x)
 #define osio_wrn(fmt, x...)		printk(KERN_WARNING "[OSIO WRN] <%s> " fmt, __func__, ##x)
-#ifdef CONFIG_OSIO_DEBUG /* #2 */
+#ifdef CONFIG_OSIO_DEBUG
    #define osio_dbg(fmt, x...)		printk(KERN_DEBUG "[OSIO DBG] <%s> " fmt, __func__, ##x)
-#else /* #2 */
+#else
    #define osio_dbg(fmt, x...)
-#endif /* #2 */
+#endif
 
 /******** data structure ********/
 #define FIFO_READ_BATCH				8
@@ -188,7 +192,7 @@ static struct request * osio_latter_request(struct request_queue *q, struct requ
 	return list_entry(rq->queuelist.next, struct request, queuelist);
 }
 
-#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0) /* #3 */
+#if LINUX_VERSION_CODE >= KERNEL_VERSION(3,12,0)
 static int osio_init_queue(struct request_queue *q, struct elevator_type *e)
 {
 	struct osio_data *od;
@@ -223,7 +227,7 @@ static int osio_init_queue(struct request_queue *q, struct elevator_type *e)
 	spin_unlock_irq(q->queue_lock);
 	return 0;
 }
-#else /* #3 */
+#else
 static int osio_init_queue(struct request_queue *q)
 {
 	struct osio_data *od;
@@ -250,7 +254,7 @@ static int osio_init_queue(struct request_queue *q)
 
 	return 0;
 }
-#endif /* #3 */
+#endif
 
 static void osio_exit_queue(struct elevator_queue *e)
 {
